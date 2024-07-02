@@ -1,24 +1,18 @@
-name: Build and Sign Application
+name: Sign and Release Application
 
 on:
   release:
     types: [created]
 
 jobs:
-  build-and-sign:
+  sign-and-release:
     runs-on: windows-latest
     steps:
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v4
     - name: Set up Python
-      uses: actions/setup-python@v2
+      uses: actions/setup-python@v4
       with:
         python-version: '3.x'
-    - name: Install dependencies
-      run: |
-        python -m pip install --upgrade pip
-        pip install pyinstaller
-    - name: Build with PyInstaller
-      run: pyinstaller --onefile --windowed Cahier_de_textes_v12.py
     - name: Sign the executable
       env:
         CERTIFICATE: ${{ secrets.CODE_SIGNING_CERTIFICATE }}
@@ -28,13 +22,23 @@ jobs:
         [System.IO.File]::WriteAllBytes($certPath, [System.Convert]::FromBase64String($env:CERTIFICATE))
         $securePass = ConvertTo-SecureString -String $env:CERTIFICATE_PASSWORD -Force -AsPlainText
         $cert = Get-PfxCertificate -FilePath $certPath -Password $securePass
-        Set-AuthenticodeSignature -FilePath dist/Cahier_de_textes_v12.exe -Certificate $cert -TimestampServer "http://timestamp.digicert.com"
-    - name: Upload Release Asset
+        Set-AuthenticodeSignature -FilePath Cahier_de_textes.exe -Certificate $cert -TimestampServer "http://timestamp.digicert.com"
+      shell: pwsh
+    - name: Upload Signed Executable
       uses: actions/upload-release-asset@v1
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       with:
         upload_url: ${{ github.event.release.upload_url }}
-        asset_path: ./dist/Cahier_de_textes_v12.exe
-        asset_name: Cahier_de_textes_v12.exe
+        asset_path: ./Cahier_de_textes.exe
+        asset_name: Cahier_de_textes.exe
         asset_content_type: application/octet-stream
+    - name: Upload Distribution Zip
+      uses: actions/upload-release-asset@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        upload_url: ${{ github.event.release.upload_url }}
+        asset_path: ./Cahier_de_textes_distribution.zip
+        asset_name: Cahier_de_textes_distribution.zip
+        asset_content_type: application/zip
