@@ -30,7 +30,7 @@ Cahier de Textes est un outil conçu pour simplifier et accélérer la gestion a
 
 ## Sécurité
 
-Pour des informations sur la gestion des faux positifs d'antivirus, consultez le fichier [ANTIVIRUS.md](lien_vers_ANTIVIRUS.md).
+Pour des informations sur la gestion des faux positifs d'antivirus, consultez le fichier [ANTIVIRUS.md](https://github.com/Pacontre/Cahier_de_textes/blob/main/Antivirus.md).
 
 ## Contribution
 
