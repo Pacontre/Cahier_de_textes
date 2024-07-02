@@ -8,7 +8,7 @@ jobs:
   sign-and-release:
     runs-on: windows-latest
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v4  # Mise à jour à la version 4
     - name: Sign the executable
       env:
         CERTIFICATE: ${{ secrets.CODE_SIGNING_CERTIFICATE }}
@@ -19,6 +19,7 @@ jobs:
         $securePass = ConvertTo-SecureString -String $env:CERTIFICATE_PASSWORD -Force -AsPlainText
         $cert = Get-PfxCertificate -FilePath $certPath -Password $securePass
         Set-AuthenticodeSignature -FilePath Cahier_de_textes.exe -Certificate $cert -TimestampServer "http://timestamp.digicert.com"
+      shell: pwsh
     - name: Upload Signed Executable
       uses: actions/upload-release-asset@v1
       env:
