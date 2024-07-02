@@ -34,7 +34,7 @@ Pour des informations sur la gestion des faux positifs d'antivirus, consultez le
 
 ## Contribution
 
-Ce projet est ouvert aux contributions. Veuillez consulter le fichier [CONTRIBUTING.md](CONTRIBUTING.md) pour plus d'informations sur comment participer au projet.
+Ce projet est ouvert aux contributions. Veuillez consulter le fichier [CONTRIBUTING.md](https://github.com/Pacontre/Cahier_de_textes/blob/main/Contributing.md) pour plus d'informations sur comment participer au projet.
 
 ## Licence
 
