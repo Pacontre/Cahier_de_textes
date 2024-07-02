@@ -16,7 +16,7 @@ Cahier de Textes est un outil conçu pour simplifier et accélérer la gestion a
 
 ## Installation
 
-1. Téléchargez la dernière version du fichier `Cahier_de_textes.zip` depuis la page [Releases](lien_vers_les_releases).
+1. Téléchargez la dernière version du fichier `Cahier_de_textes.zip` depuis la page [Releases](https://github.com/Pacontre/Cahier_de_textes/releases/tag/v12.00).
 2. Décompressez le fichier dans le dossier de votre choix.
 3. Double-cliquez sur `Cahier_de_textes.exe` pour lancer l'application.
 
