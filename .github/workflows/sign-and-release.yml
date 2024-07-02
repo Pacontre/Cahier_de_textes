@@ -1,0 +1,39 @@
+name: Sign and Release Application
+
+on:
+  release:
+    types: [created]
+
+jobs:
+  sign-and-release:
+    runs-on: windows-latest
+    steps:
+    - uses: actions/checkout@v3
+    - name: Sign the executable
+      env:
+        CERTIFICATE: ${{ secrets.CODE_SIGNING_CERTIFICATE }}
+        CERTIFICATE_PASSWORD: ${{ secrets.CERTIFICATE_PASSWORD }}
+      run: |
+        $certPath = "certificate.pfx"
+        [System.IO.File]::WriteAllBytes($certPath, [System.Convert]::FromBase64String($env:CERTIFICATE))
+        $securePass = ConvertTo-SecureString -String $env:CERTIFICATE_PASSWORD -Force -AsPlainText
+        $cert = Get-PfxCertificate -FilePath $certPath -Password $securePass
+        Set-AuthenticodeSignature -FilePath Cahier_de_textes.exe -Certificate $cert -TimestampServer "http://timestamp.digicert.com"
+    - name: Upload Signed Executable
+      uses: actions/upload-release-asset@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        upload_url: ${{ github.event.release.upload_url }}
+        asset_path: ./Cahier_de_textes.exe
+        asset_name: Cahier_de_textes.exe
+        asset_content_type: application/octet-stream
+    - name: Upload Distribution Zip
+      uses: actions/upload-release-asset@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        upload_url: ${{ github.event.release.upload_url }}
+        asset_path: ./Cahier_de_textes_distribution.zip
+        asset_name: Cahier_de_textes_distribution.zip
+        asset_content_type: application/zip
