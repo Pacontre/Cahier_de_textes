@@ -5,15 +5,22 @@ on:
     types: [created]
 
 jobs:
-  release-assets:
+  sign-and-release:
     runs-on: windows-latest
     steps:
     - uses: actions/checkout@v4
-    - name: Set up Python
-      uses: actions/setup-python@v5
-      with:
-        python-version: '3.x'
-    - name: Upload Executable
+    - name: Sign the executable
+      env:
+        CERTIFICATE: ${{ secrets.CODE_SIGNING_CERTIFICATE }}
+        CERTIFICATE_PASSWORD: ${{ secrets.CERTIFICATE_PASSWORD }}
+      run: |
+        $certPath = "certificate.pfx"
+        [System.IO.File]::WriteAllBytes($certPath, [System.Convert]::FromBase64String($env:CERTIFICATE))
+        $securePwd = ConvertTo-SecureString -String $env:CERTIFICATE_PASSWORD -Force -AsPlainText
+        $cert = Get-PfxCertificate -FilePath $certPath -Password $securePwd
+        Set-AuthenticodeSignature -FilePath Cahier_de_textes.exe -Certificate $cert -TimestampServer "http://timestamp.digicert.com"
+      shell: pwsh
+    - name: Upload Signed Executable
       uses: actions/upload-release-asset@v1
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
