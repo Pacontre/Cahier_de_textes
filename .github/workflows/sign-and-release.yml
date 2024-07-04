@@ -7,12 +7,15 @@ on:
 jobs:
   sign-and-release:
     runs-on: windows-latest
+
     steps:
     - uses: actions/checkout@v3
+
     - name: Setup Node.js
       uses: actions/setup-node@v3
       with:
         node-version: '20'
+
     - name: Sign the executable
       env:
         CERTIFICATE: ${{ secrets.CODE_SIGNING_CERTIFICATE }}
@@ -27,28 +30,30 @@ jobs:
           throw "Signature failed: $($sign.StatusMessage)"
         }
       shell: pwsh
+
     - name: Create Release
       id: create_release
-      uses: ncipollo/release-action@v1
+      uses: softprops/action-gh-release@v1  # Utiliser une action alternative compatible avec Node.js 20
       env:
-        GITHUB_TOKEN: ${{ secrets.PERSONAL_ACCESS_TOKEN }}
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       with:
-        allowUpdates: true
+        tag_name: ${{ github.ref }}
+        release_name: Release ${{ github.ref }}
         draft: false
         prerelease: false
+
     - name: Upload Signed Executable
-      uses: svenstaro/upload-release-action@v2
+      uses: actions/upload-release-asset@v3  # Utiliser une version compatible avec Node.js 20
       with:
-        repo_token: ${{ secrets.PERSONAL_ACCESS_TOKEN }}
-        file: ./Cahier_de_textes.exe
+        upload_url: ${{ steps.create_release.outputs.upload_url }}
+        asset_path: ./Cahier_de_textes.exe
         asset_name: Cahier_de_textes.exe
-        tag: ${{ github.ref }}
-        overwrite: true
+        asset_content_type: application/octet-stream
+
     - name: Upload Distribution Zip
-      uses: svenstaro/upload-release-action@v2
+      uses: actions/upload-release-asset@v3  # Utiliser une version compatible avec Node.js 20
       with:
-        repo_token: ${{ secrets.PERSONAL_ACCESS_TOKEN }}
-        file: ./Cahier_de_textes_distribution.zip
+        upload_url: ${{ steps.create_release.outputs.upload_url }}
+        asset_path: ./Cahier_de_textes_distribution.zip
         asset_name: Cahier_de_textes_distribution.zip
-        tag: ${{ github.ref }}
-        overwrite: true
+        asset_content_type: application/zip
