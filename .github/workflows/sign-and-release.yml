@@ -16,24 +16,23 @@ jobs:
       with:
         node-version: '20'
 
-    - name: Sign the executable
+    - name: Import GPG key
       env:
-        CERTIFICATE: ${{ secrets.CODE_SIGNING_CERTIFICATE }}
-        CERTIFICATE_PASSWORD: ${{ secrets.CERTIFICATE_PASSWORD }}
+        GPG_PRIVATE_KEY: ${{ secrets.GPG_PRIVATE_KEY }}
+        GPG_PASSPHRASE: ${{ secrets.GPG_PASSPHRASE }}
       run: |
-        $certPath = "certificate.pfx"
-        [System.IO.File]::WriteAllBytes($certPath, [System.Convert]::FromBase64String($env:CERTIFICATE))
-        $securePwd = ConvertTo-SecureString -String $env:CERTIFICATE_PASSWORD -Force -AsPlainText
-        $cert = New-Object System.Security.Cryptography.X509Certificates.X509Certificate2($certPath, $securePwd, [System.Security.Cryptography.X509Certificates.X509KeyStorageFlags]::Exportable)
-        $sign = Set-AuthenticodeSignature -FilePath Cahier_de_textes.exe -Certificate $cert
-        if ($sign.Status -ne "Valid") {
-          throw "Signature failed: $($sign.StatusMessage)"
-        }
-      shell: pwsh
+        echo "$env:GPG_PRIVATE_KEY" | gpg --batch --import
+        echo "5" | gpg --batch --yes --passphrase "$env:GPG_PASSPHRASE" --import-ownertrust
+
+    - name: Sign the executable with GPG
+      env:
+        GPG_PASSPHRASE: ${{ secrets.GPG_PASSPHRASE }}
+      run: |
+        gpg --batch --yes --passphrase "$env:GPG_PASSPHRASE" --pinentry-mode loopback --output Cahier_de_textes.exe.gpg --detach-sign Cahier_de_textes.exe
 
     - name: Create Release
       id: create_release
-      uses: softprops/action-gh-release@v1  # Utiliser une action alternative compatible avec Node.js 20
+      uses: softprops/action-gh-release@v1
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       with:
@@ -43,19 +42,17 @@ jobs:
         prerelease: false
 
     - name: Upload Signed Executable
-      uses: svenstaro/upload-release-action@v2  # Utiliser une action alternative compatible avec Node.js 20
+      uses: actions/upload-release-asset@v3
       with:
-        repo_token: ${{ secrets.GITHUB_TOKEN }}
-        file: ./Cahier_de_textes.exe
-        asset_name: Cahier_de_textes.exe
-        tag: ${{ github.ref }}
-        overwrite: true
+        upload_url: ${{ steps.create_release.outputs.upload_url }}
+        asset_path: ./Cahier_de_textes.exe.gpg
+        asset_name: Cahier_de_textes.exe.gpg
+        asset_content_type: application/octet-stream
 
     - name: Upload Distribution Zip
-      uses: svenstaro/upload-release-action@v2  # Utiliser une action alternative compatible avec Node.js 20
+      uses: actions/upload-release-asset@v3
       with:
-        repo_token: ${{ secrets.GITHUB_TOKEN }}
-        file: ./Cahier_de_textes_distribution.zip
+        upload_url: ${{ steps.create_release.outputs.upload_url }}
+        asset_path: ./Cahier_de_textes_distribution.zip
         asset_name: Cahier_de_textes_distribution.zip
-        tag: ${{ github.ref }}
-        overwrite: true
+        asset_content_type: application/zip
