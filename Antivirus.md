@@ -16,7 +16,7 @@ Cahier de Textes est un logiciel légitime et sûr. Ces faux positifs sont des e
 
 1. Vérifiez les hashes SHA-256 :
    - Hash SHA-256 de l'exécutable : 37881e4851fb3b48590f7c54cb0c99dfac23c04527161effbcd02494905de1e6
-   - Hash SHA-256 du fichier zip : EB40FF5CC06FEE3B5760E15F65DB37EDFFC68EFD981DF20658401C8085843070
+   - Hash SHA-256 du fichier zip : d441d9063ce3f4b3e94d714e775095eb9f0c881c1bb5ab58777ac41f06cb1993
 
    Pour vérifier le hash sur votre machine :
    1. Ouvrez PowerShell
