@@ -5,7 +5,7 @@ on:
     types: [created]
 
 jobs:
-  upload-release-assets:
+  release-assets:
     runs-on: windows-latest
     steps:
     - uses: actions/checkout@v4
