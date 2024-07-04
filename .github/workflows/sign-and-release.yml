@@ -1,30 +1,15 @@
-name: Sign and Release Application
+name: Release Application
 
 on:
   release:
     types: [created]
 
 jobs:
-  sign-and-release:
+  upload-release-assets:
     runs-on: windows-latest
     steps:
     - uses: actions/checkout@v4
-    - name: Set up Python
-      uses: actions/setup-python@v5
-      with:
-        python-version: '3.x'
-    - name: Sign the executable
-      env:
-        CERTIFICATE: ${{ secrets.CODE_SIGNING_CERTIFICATE }}
-        CERTIFICATE_PASSWORD: ${{ secrets.CERTIFICATE_PASSWORD }}
-      run: |
-        $certPath = "certificate.pfx"
-        [System.IO.File]::WriteAllBytes($certPath, [System.Convert]::FromBase64String($env:CERTIFICATE))
-        $securePass = ConvertTo-SecureString -String $env:CERTIFICATE_PASSWORD -Force -AsPlainText
-        $cert = Get-PfxCertificate -FilePath $certPath -Password $securePass
-        Set-AuthenticodeSignature -FilePath Cahier_de_textes.exe -Certificate $cert -TimestampServer "http://timestamp.digicert.com"
-      shell: pwsh
-    - name: Upload Signed Executable
+    - name: Upload Executable
       uses: actions/upload-release-asset@v1
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
