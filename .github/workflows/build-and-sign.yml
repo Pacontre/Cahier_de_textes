@@ -9,6 +9,10 @@ jobs:
     runs-on: windows-latest
     steps:
     - uses: actions/checkout@v4
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '20'
     - name: Sign the executable
       env:
         CERTIFICATE: ${{ secrets.CODE_SIGNING_CERTIFICATE }}
@@ -17,11 +21,14 @@ jobs:
         $certPath = "certificate.pfx"
         [System.IO.File]::WriteAllBytes($certPath, [System.Convert]::FromBase64String($env:CERTIFICATE))
         $securePwd = ConvertTo-SecureString -String $env:CERTIFICATE_PASSWORD -Force -AsPlainText
-        $cert = Get-PfxCertificate -FilePath $certPath -Password $securePwd
-        Set-AuthenticodeSignature -FilePath Cahier_de_textes.exe -Certificate $cert -TimestampServer "http://timestamp.digicert.com"
+        $cert = New-Object System.Security.Cryptography.X509Certificates.X509Certificate2($certPath, $securePwd, [System.Security.Cryptography.X509Certificates.X509KeyStorageFlags]::Exportable)
+        $sign = Set-AuthenticodeSignature -FilePath Cahier_de_textes.exe -Certificate $cert
+        if ($sign.Status -ne "Valid") {
+          throw "Signature failed: $($sign.StatusMessage)"
+        }
       shell: pwsh
     - name: Upload Signed Executable
-      uses: actions/upload-release-asset@v1
+      uses: actions/upload-release-asset@v2
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       with:
@@ -30,7 +37,7 @@ jobs:
         asset_name: Cahier_de_textes.exe
         asset_content_type: application/octet-stream
     - name: Upload Distribution Zip
-      uses: actions/upload-release-asset@v1
+      uses: actions/upload-release-asset@v2
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       with:
