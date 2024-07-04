@@ -8,9 +8,9 @@ jobs:
   sign-and-release:
     runs-on: windows-latest
     steps:
-    - uses: actions/checkout@v4
+    - uses: actions/checkout@v3
     - name: Setup Node.js
-      uses: actions/setup-node@v4
+      uses: actions/setup-node@v3
       with:
         node-version: '20'
     - name: Sign the executable
@@ -27,21 +27,28 @@ jobs:
           throw "Signature failed: $($sign.StatusMessage)"
         }
       shell: pwsh
+    - name: Create Release
+      id: create_release
+      uses: ncipollo/release-action@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.PERSONAL_ACCESS_TOKEN }}
+      with:
+        allowUpdates: true
+        draft: false
+        prerelease: false
     - name: Upload Signed Executable
-      uses: actions/upload-release-asset@v2
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      uses: svenstaro/upload-release-action@v2
       with:
-        upload_url: ${{ github.event.release.upload_url }}
-        asset_path: ./Cahier_de_textes.exe
+        repo_token: ${{ secrets.PERSONAL_ACCESS_TOKEN }}
+        file: ./Cahier_de_textes.exe
         asset_name: Cahier_de_textes.exe
-        asset_content_type: application/octet-stream
+        tag: ${{ github.ref }}
+        overwrite: true
     - name: Upload Distribution Zip
-      uses: actions/upload-release-asset@v2
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      uses: svenstaro/upload-release-action@v2
       with:
-        upload_url: ${{ github.event.release.upload_url }}
-        asset_path: ./Cahier_de_textes_distribution.zip
+        repo_token: ${{ secrets.PERSONAL_ACCESS_TOKEN }}
+        file: ./Cahier_de_textes_distribution.zip
         asset_name: Cahier_de_textes_distribution.zip
-        asset_content_type: application/zip
+        tag: ${{ github.ref }}
+        overwrite: true
